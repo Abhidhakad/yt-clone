@@ -12,12 +12,14 @@ const Body = () => {
   const navigate = useNavigate();
   const accessToken = localStorage.getItem("access_token");
   const [loading, setLoading] = useState(true);
-  const { leftsidebar, rightsidebar } = useSelector((state) => state.constant);
-  const isSidebarOpen = leftsidebar || rightsidebar; 
+  const leftsidebar = useSelector((state) => state.constant.leftsidebar);
+  const isSidebarOpen = leftsidebar;
 
   const handleCloseSidebar = () => {
-    if (leftsidebar) dispatch(setLeftsidebar(false));
-    if (rightsidebar) dispatch(setRightsidebar(false));
+    if (leftsidebar) {
+      dispatch(setRightsidebar(false));
+      dispatch(setLeftsidebar(false));
+    }
   };
 
   const fetchUserProfile = useCallback(async () => {
@@ -59,13 +61,16 @@ const Body = () => {
   }, [accessToken, fetchUserProfile]);
 
   return (
-    <div className="relative bg-gray-50 dark:bg-neutral-800 h-screen">
+    <div
+    className="relative bg-gray-50 dark:bg-neutral-800 h-screen">
       {loading ? (
         <div className="flex justify-center mt-52">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
         </div>
       ) : (
-        <div className="relative">
+        <div
+        onClick={()=> setRightsidebar(false)} 
+        className="relative">
           <Header />
           <LeftSidebar />
           <RightSidebar />
