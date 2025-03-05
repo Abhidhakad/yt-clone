@@ -1,32 +1,29 @@
 import React from "react";
-import { RiMenuFill } from "react-icons/ri";
-import { CiSearch } from "react-icons/ci";
-import { AiFillAudio } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
-import { setLeftsidebar, setRightsidebar } from "../redux/slices/constantSlice";
-
-const Header = () => {
-  const user = useSelector((state) => state.user);
-  const { leftsidebar, rightsidebar } = useSelector((state) => state.constant);
+import { RiMenuFill } from "react-icons/ri";
+import { setLeftsidebar } from "../redux/slices/constantSlice";
+const LeftSidebar = () => {
+  const leftsidebar = useSelector((state) => state.constant.leftsidebar);
+  const user = useSelector((state)=> state.user);
   const dispatch = useDispatch();
 
-  const toggleLeftSidebar = () => {
-    console.log("Left Sidebar clicked. Current state:", leftsidebar);
-    dispatch(setLeftsidebar(!leftsidebar));
-  };
-
-  const rightsidebarHandler = () => {
-    console.log("Right Side bar clicked: ",rightsidebar);
-    dispatch(setRightsidebar(!rightsidebar));
-  }
+  
+    const toggleLeftSidebar = () => {
+      console.log("Left Sidebar clicked. Current state:", leftsidebar);
+      dispatch(setLeftsidebar(!leftsidebar));
+    };
 
   return (
-    <div className="bg-gray-50 dark:bg-neutral-800 py-2 mx-6 text-2xl dark:text-white shadow-2xs flex justify-between items-center">
-      <div className="flex gap-4 items-center relative">
+    <div
+    className={`fixed top-0 left-0 w-64 h-full bg-gray-50 text-black shadow-lg border border-gray-200 z-50 transform ${
+      leftsidebar ? "translate-x-0" : "-translate-x-full"
+    } transition-transform duration-300`}
+    >
+      <div className="flex gap-4 items-center relative mx-6 my-4">
         <RiMenuFill
-         onClick={toggleLeftSidebar} 
-         className="cursor-pointer" 
-         aria-label="Toggle Left Sidebar" 
+          onClick={toggleLeftSidebar}
+          className="cursor-pointer text-2xl"
+          aria-label="Toggle Left Sidebar"
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -59,36 +56,10 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="flex gap-3 justify-center items-center">
-        <div className="flex">
-          <input
-            className="px-4 w-lg font-medium border z-10 text-base py-1 border-gray-400 rounded-l-full focus:outline-0 focus:ring focus:ring-cyan-700"
-            type="text"
-            placeholder="Search"
-          />
-          <span className="py-2 px-4 border border-gray-400 rounded-r-full bg-gray-100 focus:ring focus:ring-cyan-700 hover:bg-gray-200">
-            <CiSearch />
-          </span>
-        </div>
-
-        <div className="bg-gray-200/45 hover:bg-gray-200 rounded-full p-2">
-          <AiFillAudio />
-        </div>
-      </div>
-
-      <div
-        onClick={rightsidebarHandler}
-        className="relative w-10 flex items-center justify-center"
-      >
-        <img
-          loading="lazy"
-          className="rounded-full mx-auto w-full "
-          src={user?.snippet?.thumbnails?.high?.url}
-          alt="Profile"
-        />
-      </div>
+      <h2 className="text-lg font-semibold p-4">Left Sidebar</h2>
+      <p className="p-4">This is the left sidebar content.</p>
     </div>
   );
 };
 
-export default Header;
+export default LeftSidebar;
