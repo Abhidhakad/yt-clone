@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import LeftSidebar from "./Leftsidebar";
 import RightSidebar from "./RightSidebar"
 import { setLeftsidebar, setRightsidebar } from "../redux/slices/constantSlice";
+import { Outlet } from "react-router-dom";
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const Body = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
+        "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,brandingSettings,contentDetails&mine=true",
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
@@ -68,12 +69,11 @@ const Body = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
         </div>
       ) : (
-        <div
-        onClick={()=> setRightsidebar(false)} 
-        className="relative">
+        <div className="flex flex-col">
           <Header />
           <LeftSidebar />
           <RightSidebar />
+          <Outlet />
           {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-gray-800/30 z-40 transition-opacity duration-300"

@@ -1,33 +1,67 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { RiMenuFill } from "react-icons/ri";
 import { CiSearch } from "react-icons/ci";
 import { AiFillAudio } from "react-icons/ai";
+import { MdClear } from "react-icons/md";
+import { YOUTUBE_SEARCH_API } from "../utils/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { setLeftsidebar, setRightsidebar } from "../redux/slices/constantSlice";
+import { cacheResults } from "../redux/slices/searchSlice";
+import SearchSuggestions from "./searchSuggestions";
 
 const Header = () => {
-  const user = useSelector((state) => state.user);
-  const { leftsidebar, rightsidebar } = useSelector((state) => state.constant);
+
+  const [searchInput, setSearchInput] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+  const searchCache = useSelector((state) => state.search);
+  const { leftsidebar, rightsidebar } = useSelector((state) => state.constant);
 
   const toggleLeftSidebar = () => {
-    console.log("Left Sidebar clicked. Current state:", leftsidebar);
     dispatch(setLeftsidebar(!leftsidebar));
   };
 
-  const rightsidebarHandler = () => {
-    console.log("Right Side bar clicked: ",rightsidebar);
+  const toggleRightSidebar = () => {
     dispatch(setRightsidebar(!rightsidebar));
-  }
+  };
+
+  const getSearchSuggestions = useCallback(async () => {
+    try {
+      if (!searchInput.trim()) return;
+      const response = await fetch(`${YOUTUBE_SEARCH_API}${searchInput}`);
+      if (!response.ok) throw new Error("Failed to fetch search results");
+
+      const json = await response.json();
+      setSearchSuggestions(json[1] || []);
+
+      dispatch(cacheResults({ [searchInput]: json[1] }));
+    } catch (error) {
+      console.error("Error fetching search result", error);
+    }
+  }, [searchInput, dispatch]);
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchCache[searchInput]) {
+        setSearchSuggestions(searchCache[searchInput]);
+      } else {
+        getSearchSuggestions();
+      }
+    }, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchInput, getSearchSuggestions]);
 
   return (
-    <div className="bg-gray-50 dark:bg-neutral-800 py-2 mx-6 text-2xl dark:text-white shadow-2xs flex justify-between items-center">
+    <div className="bg-gray-50 dark:bg-neutral-800 py-2 px-6 text-2xl dark:text-white shadow-2xs flex justify-between items-center fixed top-0 left-0 right-0 z-30">
       <div className="flex gap-4 items-center relative">
         <RiMenuFill
-         onClick={toggleLeftSidebar} 
-         className="cursor-pointer" 
-         aria-label="Toggle Left Sidebar" 
+          onClick={toggleLeftSidebar}
+          className="cursor-pointer"
+          aria-label="Toggle Left Sidebar"
         />
+        {/* yt logo */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="93"
@@ -54,21 +88,39 @@ const Header = () => {
             <path d="M92.6517 11.4999C92.6517 8.51994 92.3517 6.30994 88.9217 6.30994C85.6917 6.30994 84.9717 8.45994 84.9717 11.6199V13.7899C84.9717 16.8699 85.6317 19.1099 88.8417 19.1099C91.3817 19.1099 92.6917 17.8399 92.5417 15.3799L90.2917 15.2599C90.2617 16.7799 89.9117 17.3999 88.9017 17.3999C87.6317 17.3999 87.5717 16.1899 87.5717 14.3899V13.5499H92.6517V11.4999ZM88.8617 7.96994C90.0817 7.96994 90.1717 9.11994 90.1717 11.0699V12.0799H87.5717V11.0699C87.5717 9.13994 87.6517 7.96994 88.8617 7.96994Z"></path>
           </g>
         </svg>
-        <div className="absolute -top-3 -right-4 text-[12px] text-gray-600">
+        <div className="absolute -top-2 left-34 text-[10px] text-gray-700">
           {user?.snippet?.country}
         </div>
       </div>
 
       <div className="flex gap-3 justify-center items-center">
-        <div className="flex">
+        <div className="flex relative">
           <input
-            className="px-4 w-lg font-medium border z-10 text-base py-1 border-gray-400 rounded-l-full focus:outline-0 focus:ring focus:ring-cyan-700"
+            className="px-4 w-lg border z-10 text-base py-1 border-gray-400 rounded-l-full focus:outline-0 focus:ring focus:ring-cyan-700"
             type="text"
             placeholder="Search"
+            onChange={(e) => setSearchInput(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setShowSuggestions(false)}
+            value={searchInput}
           />
+          {searchInput.length > 0 && (
+            <span
+              onClick={() => setSearchInput("")}
+              className="absolute right-16 top-1.5 cursor-pointer z-20"
+            >
+              <MdClear className="text-3xl cursor-pointer" />
+            </span>
+          )}
           <span className="py-2 px-4 border border-gray-400 rounded-r-full bg-gray-100 focus:ring focus:ring-cyan-700 hover:bg-gray-200">
             <CiSearch />
           </span>
+
+          {(searchSuggestions.length > 0 && showSuggestions) && searchInput.length > 0 ? (
+            <SearchSuggestions searchSuggestions={searchSuggestions} />
+          ) : (
+            ""
+          )}
         </div>
 
         <div className="bg-gray-200/45 hover:bg-gray-200 rounded-full p-2">
@@ -77,8 +129,8 @@ const Header = () => {
       </div>
 
       <div
-        onClick={rightsidebarHandler}
-        className="relative w-10 flex items-center justify-center"
+        onClick={toggleRightSidebar}
+        className="relative w-10 flex items-center justify-center cursor-pointer"
       >
         <img
           loading="lazy"
