@@ -7,7 +7,7 @@ import { YOUTUBE_SEARCH_API } from "../utils/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { setLeftsidebar, setRightsidebar  } from "../redux/slices/constantSlice";
 import { cacheResults } from "../redux/slices/searchSlice";
-import SearchSuggestions from "./searchSuggestions";
+import SearchSuggestions from "./SearchSuggestions";
 import { YoutubeIcon } from "../icons/YoutubeIcon";
 
 const Header = () => {
