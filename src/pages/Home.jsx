@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Header from "../components/Header";
 import { useDispatch, useSelector } from "react-redux";
-import LeftSidebar from "../components/Leftsidebar";
+import LeftSidebar from "../components/LeftSidebar";
 import RightSidebar from "../components/RightSidebar";
 import { setLeftsidebar, setRightsidebar } from "../redux/slices/constantSlice";
 import { Outlet } from "react-router-dom";
