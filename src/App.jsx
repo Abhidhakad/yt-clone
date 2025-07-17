@@ -1,10 +1,8 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Login from "./components/Login";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Channel from "./pages/Channel";
 import Body from "./components/Body";
-import Channel from "./components/Channel";
-import Home from "./components/Home";
-import { Navigate } from "react-router-dom";
 
 const App = () => {
   const accessToken = localStorage.getItem("access_token");
@@ -12,13 +10,15 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        
-        <Route path="/" element={accessToken? <Body/> : <Login/>}>
-          <Route index element={<Home />} />
-          <Route path="/:userId" element={<Channel />} />
+        <Route
+          path="/login"
+          element={accessToken ? <Navigate to="/" /> : <Login />}
+        />
+        <Route path="/" element={<Home />}>
+            <Route index element={<Body />} />
+            <Route path=":userId" element={<Channel />} />
         </Route>
-
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={accessToken ? <Navigate to="/" /> : <Login />} />
       </Routes>
     </Router>
   );

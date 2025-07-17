@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { navItems } from "../utils/constant"
@@ -29,8 +29,11 @@ const Channel = () => {
       navigate("/login");
       return;
     }
-    getUploadedVideos(user.contentDetails?.relatedPlaylists?.uploads);
-  }, []);
+    console.log("user in channel: ",user);
+    if (user?.contentDetails?.relatedPlaylists?.uploads) {
+    getUploadedVideos(user.contentDetails.relatedPlaylists.uploads);
+  }
+  }, [navigate,user,accessToken]);
 
   return (
     <div className="pt-14 pl-20 min-h-screen bg-gray-50 text-white">
@@ -38,7 +41,7 @@ const Channel = () => {
         <div>
           {/* Channel Banner */}
           <div
-            className="w-[90%] mx-auto rounded-2xl h-52 md:h-46 bg-cover bg-center relative"
+            className="w-[90%] mx-auto border rounded-2xl h-52 md:h-46 bg-cover bg-center relative"
             style={{
               backgroundImage: `url(${user.brandingSettings?.image?.bannerExternalUrl})`,
             }}
@@ -49,6 +52,7 @@ const Channel = () => {
             <div className="flex">
             <img
               src={user.snippet.thumbnails.high.url}
+              loading="eager"
               alt="Channel Profile"
               className="w-28 h-28 md:w-36 md:h-36 rounded-full"
             />
@@ -92,7 +96,7 @@ const Channel = () => {
             </div>
           </div>
 
-          <div className="sticky top-12 bg-gray-50 pt-3">
+          <div className="sticky top-14 bg-gray-50 pt-3 z-20">
           <ul className="flex mx-10 mt-8 gap-5 text-gray-600 font-medium">
               {
                 navItems.map((item) => {
@@ -108,18 +112,16 @@ const Channel = () => {
                 })
               }
             </ul>
-
-          <div className="border-b border-b-gray-300"></div>
           </div>
 
           {/* Uploaded Videos */}
           <div className="p-5 md:p-10 text-neutral-950">
             <h2 className="text-xl font-bold mb-5">For you</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {videos.map((video) => (
+              {videos.length > 0 && videos.map((video) => (
                 <div
                   key={video.id}
-                  className="bg-gray-800 p-3 rounded-lg shadow-lg"
+                  className="bg-gray-100 p-3 rounded-lg shadow-lg"
                 >
                   <a
                     href={`https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`}
@@ -129,12 +131,12 @@ const Channel = () => {
                     <img
                       src={video.snippet.thumbnails.medium.url}
                       alt={video.snippet.title}
-                      className="w-full h-40 object-cover rounded-lg"
+                      className="w-full h-40 object-cover -z-50 rounded-lg transform hover:scale-105 transition-all"
                     />
                     <h3 className="mt-3 text-sm font-semibold">
                       {video.snippet.title}
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-600">
                       {new Date(video.snippet.publishedAt).toLocaleDateString()}
                     </p>
                   </a>

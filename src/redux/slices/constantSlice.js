@@ -5,18 +5,22 @@ const constantSlice = createSlice({
   initialState: {
     leftsidebar: false,
     rightsidebar: false,
+    serachQuery:"",
   },
   reducers: {
     setLeftsidebar: (state, action) => {
       state.leftsidebar = action.payload;
     },
     setRightsidebar: (state, action) => {
-      state.rightsidebar = action.payload; // ✅ Fix: Removed extra `'`
+      state.rightsidebar = action.payload;
     },
+    setSearchQuery: (state,action) => {
+      state.serachQuery = action.payload;
+    }
   },
 });
 
 
-export const { setLeftsidebar, setRightsidebar } = constantSlice.actions;
+export const { setLeftsidebar, setRightsidebar, setSearchQuery } = constantSlice.actions;
 
 export default constantSlice.reducer;

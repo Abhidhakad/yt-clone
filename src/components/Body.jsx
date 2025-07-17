@@ -1,89 +1,77 @@
-import { useEffect, useCallback, useState } from "react";
-import Header from "./Header";
-import { addUser } from "../redux/slices/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import LeftSidebar from "./Leftsidebar";
-import RightSidebar from "./RightSidebar"
-import { setLeftsidebar, setRightsidebar } from "../redux/slices/constantSlice";
-import { Outlet } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { YOUTUBE_TRENDING_TOPICS, fetchVideosUrl } from "../utils/constant";
+import TrendingTopics from "./TrendingTopics";
+import Videos from "./Videos";
 
 const Body = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const accessToken = localStorage.getItem("access_token");
-  const [loading, setLoading] = useState(true);
-  const leftsidebar = useSelector((state) => state.constant.leftsidebar);
-  const isSidebarOpen = leftsidebar;
+  const [videos, setVideos] = useState([]);
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [nextPageToken, setNextPageToken] = useState("");
+  const [hasMoreVideos, setHasMoreVideos] = useState(true); 
 
-  const handleCloseSidebar = () => {
-    if (leftsidebar) {
-      dispatch(setRightsidebar(false));
-      dispatch(setLeftsidebar(false));
-    }
-  };
-
-  const fetchUserProfile = useCallback(async () => {
-    if (!accessToken) return;
-
+  const fetchTrendingTopics = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(
-        "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,brandingSettings,contentDetails&mine=true",
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-
-      if (response.status === 401) {
-        console.error("Access token expired. Logging out...");
-        localStorage.removeItem("access_token");
-        navigate("/login");
-        return;
-      }
-
+      const response = await fetch(YOUTUBE_TRENDING_TOPICS);
+      if (!response.ok) throw new Error(`Error fetching trending topics: ${response.status}`);
+      
       const data = await response.json();
-      if (data.items && data.items.length > 0) {
-        dispatch(addUser(data.items[0]));
-      }
+      setTrendingTopics(data?.items || []);
+      fetchVideos();
     } catch (error) {
-      console.error("Error fetching YouTube data:", error);
-      localStorage.removeItem("access_token");
-      navigate("/login");
+      console.error("Error fetching trending topics:", error);
     } finally {
       setLoading(false);
     }
-  }, [accessToken, dispatch, navigate]);
+  };
+
+  const fetchVideos = useCallback(async (pageToken = "") => {
+    if (!hasMoreVideos || loading) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(fetchVideosUrl(pageToken));
+      if (!response.ok) throw new Error(`Error fetching videos: ${response.status}`);
+
+      const data = await response.json();
+      setVideos((prevVideos) => [...prevVideos, ...data.items]);
+      setNextPageToken(data.nextPageToken || "");
+
+      if (!data.nextPageToken) setHasMoreVideos(false);
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMoreVideos]);
 
   useEffect(() => {
-    if (!accessToken) {
-      navigate("/login");
-      return;
-    }
-    fetchUserProfile();
-  }, [accessToken, fetchUserProfile]);
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && hasMoreVideos && !loading) {
+        fetchVideos(nextPageToken);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [fetchVideos, nextPageToken, loading, hasMoreVideos]);
+
+  useEffect(() => {
+    fetchTrendingTopics();
+  },[]);
 
   return (
-    <div
-    className="relative bg-gray-50 dark:bg-neutral-800 h-screen">
-      {loading ? (
-        <div className="flex justify-center mt-52">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="flex flex-col">
-          <Header />
-          <LeftSidebar />
-          <RightSidebar />
-          <Outlet />
-          {isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-gray-800/30 z-40 transition-opacity duration-300"
-            onClick={handleCloseSidebar} 
-          ></div>
-        )}
-        </div>
-      )}
+    <div className="bg-transparent min-h-screen text-white">
+      <main className="pt-20 pl-28 px-6 relative">
+        {trendingTopics.length > 0 && <TrendingTopics topics={trendingTopics} />}
+        {videos.length > 0 ? <Videos videos={videos} /> : <p className="text-center">No videos available</p>}
+        {loading && <p className="text-center">Loading more videos...</p>}
+      </main>
     </div>
   );
 };
 
 export default Body;
+
+

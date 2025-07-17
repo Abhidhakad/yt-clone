@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAccessToken } from "../utils/getAccessToken";
 
@@ -13,7 +13,7 @@ const Login = () => {
       ?client_id=${CLIENT_ID}
       &redirect_uri=${encodeURIComponent(REDIRECT_URI)}
       &response_type=token
-      &scope=https://www.googleapis.com/auth/youtube.readonly
+      &scope=https://www.googleapis.com/auth/youtube.readonly%20https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email
       &include_granted_scopes=true
       &prompt=consent`.replace(/\s/g, "");
 
@@ -22,16 +22,12 @@ const Login = () => {
 
   useEffect(() => {
     const token = getAccessToken();
-
     if (token) {
       localStorage.setItem("access_token", token);
-
-      // Clean URL (Remove Token)
       window.history.replaceState({}, document.title, window.location.pathname);
-
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">

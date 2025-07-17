@@ -6,6 +6,7 @@ import { SiYoutubeshorts } from "react-icons/si";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import { FaRegUserCircle } from "react-icons/fa";
 import { setLeftsidebar } from "../redux/slices/constantSlice";
+import { Link } from "react-router-dom";
 
 const LeftSidebar = () => {
   const leftsidebar = useSelector((state) => state.constant.leftsidebar);
@@ -81,23 +82,33 @@ const LeftSidebar = () => {
         <div className="fixed top-15 left-0 w-17 mx-0 h-full bg-gray-50 text-black">
           <ul className=" pt-2 space-y-4 mx-1">
             <li className="flex flex-col items-center py-2 hover:bg-gray-200 hover:rounded-2xl cursor-pointer">
-              <MdHome className="text-[28px]" />
-              <p className="text-[10px]">Home</p> 
+              <Link to="/">
+                <MdHome className="text-[28px]" />
+                <p className="text-[10px]">Home</p>{" "}
+              </Link>
             </li>
 
             <li className="flex flex-col gap-2 items-center py-2 cursor-pointer hover:bg-gray-200 hover:rounded-2xl">
-              <SiYoutubeshorts className="text-[26px]" />
-              <p className="text-[10px]">shorts</p>
+             <Link to="/shorts">
+             <SiYoutubeshorts className="text-[26px]" />
+             <p className="text-[10px]">shorts</p>
+             </Link>
             </li>
 
             <li className="flex flex-col gap-2 items-center py-2 cursor-pointer hover:bg-gray-200 hover:rounded-2xl">
-              <span className=""><MdOutlineSubscriptions className="text-[26px]" /></span>
-              <p className="text-[10px] px-1">Subscriptions</p>
+              <Link to="/subscriptions" className="flex flex-col items-center px-1">
+              <span className="">
+                <MdOutlineSubscriptions className="text-[26px]" />
+              </span>
+              <p className="text-[10px] px-2c">Subscriptions</p>
+              </Link>
             </li>
 
             <li className="flex flex-col gap-2 items-center py-2 cursor-pointer hover:bg-gray-200 hover:rounded-2xl">
-              <FaRegUserCircle className="text-[26px]" />
-              <p className="text-[10px]">You</p>
+             <Link to="/profile">
+             <FaRegUserCircle className="text-[26px]" />
+             <p className="text-[10px]">You</p>
+             </Link>
             </li>
           </ul>
         </div>
